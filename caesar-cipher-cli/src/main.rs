@@ -2,11 +2,15 @@
 
 To run:
 
-cargo run --  --message "Off to the bunker. Every person for themselves" --encrypt --shift 10
+cargo run --message "please just work before i rip out my hair" --encrypt --shift 10 --output-format plain 
+
+OR 
+
+cargo run --message "please just work before i rip out my hair" --encrypt --shift 10 --output-format hex
 
 To decrypt:
 
-cargo run --  --message "Ypp dy dro lexuob. Ofobi zobcyx pyb drowcovfoc" --decrypt --shift 10
+cargo run --  --message "yvvmt vwbm mtqvo lsa amm yg wcfa xylw" --decrypt --shift 10
 
 */
 
@@ -34,16 +38,33 @@ struct Args {
     /// Must be between 1 and 25, the default is 3
     #[arg(short, long, default_value = "3")]
     shift: u8,
+
+    /// The output format of the ciphertext
+    #[arg(short, long, default_value = "plain")]
+    output_format: String,
 }
 
 // run it
 fn main() {
     let args = Args::parse();
-    if args.encrypt {
-        println!("{}", encrypt(&args.message, args.shift));
+    
+    // Get the output format
+    let output_format = args.output_format;
+
+    // Encrypt or decrypt the message
+    let output_message = if args.encrypt {
+        encrypt(&args.message, args.shift)
     } else if args.decrypt {
-        println!("{}", decrypt(&args.message, args.shift));
+        decrypt(&args.message, args.shift)
     } else {
         println!("Please specify either --encrypt or --decrypt");
+        return;
+    };
+
+    // Output the ciphertext
+    match output_format.as_str() {
+        "plain" => println!("{}", output_message),
+        "hex" => println!("{}", output_message.chars().map(|c| format!("{:02X}", c as u8)).collect::<String>()),
+        _ => panic!("Unsupported output format"),
     }
 }
